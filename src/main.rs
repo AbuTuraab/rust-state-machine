@@ -1,62 +1,114 @@
+use system::Config;
+
+
 mod balances;
 mod system;
+mod support;
 
+use crate::support::Dispatch;
+// These are the concrete types we will use in our simple state machine.
+// Modules are configured for these types directly, and they satisfy all of our
+// trait requirements.
 mod types {
+
+
 	pub type AccountId = String;
 	pub type Balance = u128;
 	pub type BlockNumber = u32;
 	pub type Nonce = u32;
+	pub type Extrinsic = crate::support::Extrinsic<AccountId, crate::RuntimeCall>;
+	pub type Header = crate::support::Header<BlockNumber>;
+	pub type Block = crate::support::Block<Header, Extrinsic>;
 }
 
+pub enum RuntimeCall {
+	
+}
+
+/*
+	TODO:
+	Implement the `system::Config` trait you created on your `Runtime`.
+	Use `Self` to satisfy the generic parameter required for `system::Pallet`.
+*/
+
+// This is our main Runtime.
+// It accumulates all of the different pallets we want to use.
 #[derive(Debug)]
 pub struct Runtime {
-	system: system::Pallet<types::AccountId, 
-		types::BlockNumber,
-		types::Nonce>,
-	balances: balances::Pallet<types::AccountId, 
-	types::Balance>,
+	system: system::Pallet<Self>,
+	
+	balances: balances::Pallet<Self>,
+}
+
+impl balances::Config for Runtime {
+	type Balance = types::Balance;
+}
+impl system::Config for Runtime {
+	type AccountId = types::AccountId;
+	type BlockNumber = types::BlockNumber;
+	type Nonce = types::Nonce;
+	
 }
 
 impl Runtime {
+	// Create a new instance of the main Runtime, by creating a new instance of each pallet.
 	fn new() -> Self {
-		Self { system: system::Pallet::new(), 
-			balances: balances::Pallet::new() }
+		Self { system: system::Pallet::new(), balances: balances::Pallet::new() }
+	}
+
+fn execute_block(&mut self, block: types::Block) -> support::DispatchResult{
+	self.system.inc_block_number();
+	if block.header.block_number != self.system.block_number(){
+		return Err("Invalid block number");
+	}
+	for support::Extrinsic {caller, call} in block.extrinsics.into_iter() {
+		self.system.inc_nonce( &caller);
+		let res = self.dispatch(caller, call).map_err(|e| eprintln!(
+			"Extrinsic Error\n\tBlock {}\n\tError: {}",
+			block.header.block_number, e
+		));
+
+	}
+
+	Ok(())
+}
+}
+
+impl crate::support::Dispatch for Runtime {
+	type Caller = <Runtime as system::Config>::AccountId;
+	type Call = RuntimeCall;
+
+	fn dispatch(
+		&mut self,
+		caller: Self::Caller,
+		runtime_call: Self::Call,
+	) -> support::DispatchResult {
+		unimplemented!()
 	}
 }
 
 fn main() {
-	// println!("Hello, world!");
-
 	let mut runtime = Runtime::new();
 	let alice = "alice".to_string();
-	// let  bob = "bob".to_string();
-	// let charlie = "charlie".to_string();
+	let bob = "bob".to_string();
+	let charlie = "charlie".to_string();
 
 	runtime.balances.set_balance(&alice, 100);
 
+	// start emulating a block
 	runtime.system.inc_block_number();
 	assert_eq!(runtime.system.block_number(), 1);
 
-	// 	 let inc_nonce = runtime.system.inc_nonce(&alice);
+	// first transaction
+	runtime.system.inc_nonce(&alice);
+	let _res = runtime
+		.balances
+		.transfer(alice.clone(), bob, 30)
+		.map_err(|e| eprintln!("{}", e));
 
-	// 	let bob_transfer = runtime.balances.transfer(alice.clone(), bob, 30).map_err(|e | eprint!("{}", e));
+	// second transaction
+	runtime.system.inc_nonce(&alice);
+	let _res = runtime.balances.transfer(alice, charlie, 20).map_err(|e| eprintln!("{}", e));
 
-	// let another_inc_nonce = runtime.system.inc_nonce(&alice);
-	// let charlie_transfer = runtime.balances.transfer(alice, charlie, 20).map_err(|e| eprintln!("{}", e));
-
-	println!("{:#?}", runtime)
+	println!("{:#?}", runtime);
 }
-
-// #[cfg(test)]
-// mod test {
-//     use crate::Runtime;
-
-//     #[test]
-//     fn init_system() {
-//         let mut runtime = Runtime::new();
-
-//     runtime.system.inc_block_number();
-//      assert_eq!(runtime.system.block_number(), 1);
-
-//     }
-// }
