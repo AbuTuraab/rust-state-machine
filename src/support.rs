@@ -1,3 +1,5 @@
+use crate::RuntimeCall;
+
 /// The most primitive representation of a Blockchain block.
 pub struct Block<Header, Extrinsic> {
     /// The block header contains metadata about the block.
@@ -39,4 +41,6 @@ pub struct Block<Header, Extrinsic> {
     /// This function takes a `caller` and the `call` they want to make, and returns a `Result`
     /// based on the outcome of that function call.
     fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> DispatchResult;
+  
+  
   }
