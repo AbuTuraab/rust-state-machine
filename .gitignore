@@ -1,0 +1,15 @@
+# Rust specific
+target/
+Cargo.lock
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
