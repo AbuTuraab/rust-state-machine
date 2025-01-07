@@ -1,12 +1,11 @@
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 use std::collections::BTreeMap;
 
-/*
-	TODO: Combine all generic types and their trait bounds into a single `pub trait Config`.
-	When you are done, your `Pallet` can simply be defined with `Pallet<T: Config>`.
-*/
-
+/// The configuration trait for the Balances Module.
+/// Contains the basic types needed for handling balances.
 pub trait Config: crate::system::Config {
+	/// A type which can represent the balance of an account.
+	/// Usually this is a large unsigned integer.
 	type Balance: Zero + CheckedSub + CheckedAdd + Copy;
 }
 
@@ -19,13 +18,8 @@ pub struct Pallet<T: Config> {
 	balances: BTreeMap<T::AccountId, T::Balance>,
 }
 
-/*
-	TODO: Update all of these functions to use your new configuration trait.
-*/
-
-impl<T: Config> Pallet<T>
-{
-	/// Create a new instance of the balances module.
+impl<T: Config> Pallet<T> {
+	// Create a new instance of the balances module.
 	pub fn new() -> Self {
 		Self { balances: BTreeMap::new() }
 	}
@@ -49,7 +43,7 @@ impl<T: Config> Pallet<T>
 		caller: T::AccountId,
 		to: T::AccountId,
 		amount: T::Balance,
-	) -> crate::support::DispatchResult{
+	) -> crate::support::DispatchResult {
 		let caller_balance = self.balance(&caller);
 		let to_balance = self.balance(&to);
 
@@ -63,13 +57,49 @@ impl<T: Config> Pallet<T>
 	}
 }
 
+// A public enum which describes the calls we want to expose to the dispatcher.
+// We should expect that the caller of each call will be provided by the dispatcher,
+// and not included as a parameter of the call.
+pub enum Call<T: Config> {
+	/* TODO: Create an enum variant 
+	//`Transfer` which contains named fields:
+		- `to`: a `T::AccountId`
+		- `amount`: a `T::Balance`
+	*/
+Transfer {
+	to: T::AccountId,
+	amount: T::Balance,
+},
+
+	/* TODO: Remove the `RemoveMe` placeholder. */
+	
+}
+
+/// Implementation of the dispatch logic, mapping from `BalancesCall` to the appropriate underlying
+/// function we want to execute.
+impl<T: Config> crate::support::Dispatch for Pallet<T> {
+	type Caller = T::AccountId;
+	type Call = Call<T>;
+
+	fn dispatch(
+		&mut self,
+		caller: Self::Caller,
+		call: Self::Call,
+	) -> crate::support::DispatchResult {
+		/* TODO: use a `match` statement to route the `Call` to the appropriate pallet function. */
+		match call {
+			Call::Transfer {to, amount}=>{
+				self.transfer(caller, to, amount)?;
+			}
+		} 
+		Ok(())
+	}
+}
+
 #[cfg(test)]
 mod tests {
-	
 	struct TestConfig;
-	//::crate::system::Config;
-	//crate::system::impl_system_config_for!(TestConfig);
-	
+
 	impl crate::system::Config for TestConfig {
 		type AccountId = String;
 		type BlockNumber = u32;
@@ -109,6 +139,4 @@ mod tests {
 			Err("Not enough funds.")
 		);
 	}
-
-
 }
