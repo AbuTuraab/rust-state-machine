@@ -16,6 +16,7 @@ mod types {
 	pub type Extrinsic = crate::support::Extrinsic<AccountId, crate::RuntimeCall>;
 	pub type Header = crate::support::Header<BlockNumber>;
 	pub type Block = crate::support::Block<Header, Extrinsic>;
+	pub type Content = String;
 }
 
 // These are all the calls which are exposed to the world.
@@ -23,6 +24,7 @@ mod types {
 pub enum RuntimeCall {
 	/* TODO: Turn this into a nested enum where variant `Balances` contains a `balances::Call`. */
 	Balances (balances::Call<Runtime>),
+	ProofOfExistence (proof_of_existence::Call<Runtime>),
 	
 }
 
@@ -32,22 +34,31 @@ pub enum RuntimeCall {
 pub struct Runtime {
 	system: system::Pallet<Self>,
 	balances: balances::Pallet<Self>,
+	proof_of_existence: proof_of_existence::Pallet<Self>,
 }
 
 impl system::Config for Runtime {
 	type AccountId = types::AccountId;
 	type BlockNumber = types::BlockNumber;
 	type Nonce = types::Nonce;
+	
 }
 
 impl balances::Config for Runtime {
 	type Balance = types::Balance;
 }
 
+impl proof_of_existence::Config for Runtime {
+	type Content = types::Content;
+}
+
 impl Runtime {
 	// Create a new instance of the main Runtime, by creating a new instance of each pallet.
 	fn new() -> Self {
-		Self { system: system::Pallet::new(), balances: balances::Pallet::new() }
+		Self { system: system::Pallet::new(), 
+			balances: balances::Pallet::new(), 
+			proof_of_existence: proof_of_existence::Pallet::new() 
+		}
 	}
 
 	// Execute a block of extrinsics. Increments the block number.
@@ -83,6 +94,7 @@ impl crate::support::Dispatch for Runtime {
 		&mut self,
 		caller: Self::Caller,
 		runtime_call: Self::Call,
+		
 	) -> support::DispatchResult {
 		// This match statement will allow us to correctly route `RuntimeCall`s
 		// to the appropriate pallet level function.
@@ -97,6 +109,10 @@ impl crate::support::Dispatch for Runtime {
 				self.balances.dispatch(
 					caller, call)?;
 			},
+			RuntimeCall::ProofOfExistence(call)=>{
+				//ProofOfExistence (proof_of_existence::Call<Runtime>)
+				self.proof_of_existence.dispatch(caller, call)?;
+			}
 		}
 		Ok(())
 	}
