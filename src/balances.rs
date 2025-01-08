@@ -77,7 +77,9 @@ Transfer {
 	
 }
 
-/// Implementation of the dispatch logic, mapping from `BalancesCall` to the appropriate underlying
+/// Implementation of the dispatch logic,
+/// // mapping from `BalancesCall` 
+/// //to the appropriate underlying
 /// function we want to execute.
 impl<T: Config> crate::support::Dispatch for Pallet<T> {
 	type Caller = T::AccountId;
@@ -90,7 +92,8 @@ impl<T: Config> crate::support::Dispatch for Pallet<T> {
 	) -> crate::support::DispatchResult {
 		/* TODO: use a `match` statement to route the `Call` to the appropriate pallet function. */
 		match call {
-			Call::Transfer {to, amount}=>{
+			Call::Transfer {to, 
+				amount}=>{
 				self.transfer(caller, to, amount)?;
 			}
 		} 
