@@ -126,12 +126,14 @@ fn main() {
 	let bob = "bob".to_string();
 	let charlie = "charlie".to_string();
 
+
 	// Initialize the system with some initial balance.
 	runtime.balances.set_balance(&alice, 100);
 
 	// Here are the extrinsics in our block.
 	// You can add or remove these based on the modules and calls you have set up.
-	let block_1 = types::Block {
+	let block_1 = 
+	types::Block {
 		header: support::Header { block_number: 1 },
 		extrinsics: vec![
 			/* TODO: Update your extrinsics to use the nested enum. */
@@ -149,9 +151,34 @@ fn main() {
 		],
 	};
 
+	let block_2 = 
+	types::Block {
+		header: support::Header { block_number: 2 },
+		extrinsics: vec![
+			support::Extrinsic {
+				caller: "alice".to_string(),
+				call: RuntimeCall::Balances(
+					balances::Call::Transfer {
+						 to: "bob".to_string(), amount: 10 }),
+
+			},
+			support::Extrinsic {
+				caller: "bob".to_string(),
+				call: RuntimeCall::ProofOfExistence(
+					proof_of_existence::Call::CreateClaim {
+						claim: "Hello, world!".to_string(),
+					}),
+			},
+			
+		],
+		
+		
+	};
+
 	// Execute the extrinsics which make up our block.
 	// If there are any errors, our system panics, since we should not execute invalid blocks.
 	runtime.execute_block(block_1).expect("invalid block");
+	runtime.execute_block(block_2).expect("invalid block");
 
 	// Simply print the debug format of our runtime state.
 	println!("{:#?}", runtime);
