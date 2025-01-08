@@ -1,1 +1,1 @@
-/home/aliyu/rust-state-machine/target/debug/rust-state-machine: /home/aliyu/rust-state-machine/src/balances.rs /home/aliyu/rust-state-machine/src/main.rs /home/aliyu/rust-state-machine/src/support.rs /home/aliyu/rust-state-machine/src/system.rs
+/home/aliyu/rust-state-machine/target/debug/rust-state-machine: /home/aliyu/rust-state-machine/src/balances.rs /home/aliyu/rust-state-machine/src/main.rs /home/aliyu/rust-state-machine/src/proof_of_existence.rs /home/aliyu/rust-state-machine/src/support.rs /home/aliyu/rust-state-machine/src/system.rs
